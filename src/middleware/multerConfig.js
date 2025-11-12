@@ -3,7 +3,11 @@ const path = require('path');
 const fs = require('fs');
 
 // 1. Define the upload folder
-const uploadFolder = path.join(__dirname, '../../public/images/upload');
+const uploadFolder = path.join(process.cwd(), 'public/images/upload');
+if (!fs.existsSync(uploadFolder)) {
+  fs.mkdirSync(uploadFolder, { recursive: true });
+}
+
 
 // 2. Ensure the folder exists
 if (!fs.existsSync(uploadFolder)) {
@@ -31,12 +35,15 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// 5. Multer upload instance
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 } // 5MB max file size
+  limits: {
+    fileSize: 1 * 1024 * 1024, // 1 MB max per file
+    files: 4,                  // maximum 4 files per upload
+  },
 });
+
 
 // 6. Export a function to use in routes
 module.exports = upload;
