@@ -1,5 +1,5 @@
 const express = require("express");
-const Profile = require("../models/profile-model"); // adjust path if needed
+const Profile = require("../models/profile-model");
 
 const router = express.Router();
 
@@ -14,7 +14,7 @@ router.get("/vcf/:id", async (req, res) => {
     const [firstName, ...rest] = (profile.name || "").split(" ");
     const lastName = rest.join(" ");
 
-    // Build VCF
+    // Build VCF (well formatted, mobile-safe)
     let vcf = `BEGIN:VCARD
 VERSION:3.0
 N:${lastName};${firstName}
@@ -24,20 +24,23 @@ FN:${profile.name}
     if (profile.company) vcf += `ORG:${profile.company}\n`;
     if (profile.jobTitle) vcf += `TITLE:${profile.jobTitle}\n`;
 
-    profile.phones?.forEach((p) => {
-      vcf += `TEL;TYPE=${(p.type || "WORK").toUpperCase()}:${p.number}\n`;
+    (profile.phones || []).forEach((p) => {
+      if (p.number)
+        vcf += `TEL;TYPE=${(p.type || "WORK").toUpperCase()}:${p.number}\n`;
     });
 
-    profile.emails?.forEach((e) => {
-      vcf += `EMAIL;TYPE=${(e.type || "WORK").toUpperCase()}:${e.address}\n`;
+    (profile.emails || []).forEach((e) => {
+      if (e.address)
+        vcf += `EMAIL;TYPE=${(e.type || "WORK").toUpperCase()}:${e.address}\n`;
     });
 
     vcf += "END:VCARD";
 
-    // Correct headers to open native Contact UI
+    // Correct headers to trigger SAVE CONTACT
     res.set({
       "Content-Type": "text/vcard; charset=utf-8",
-      "Content-Disposition": `inline; filename="${profile.name}.vcf"`,
+      "Content-Disposition": `attachment; filename="${profile.name}.vcf"`,
+      "Content-Length": Buffer.byteLength(vcf, "utf8"),
     });
 
     return res.send(vcf);
