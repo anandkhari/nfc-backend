@@ -14,6 +14,8 @@ const authRouter = require('./routes/auth');
 const adminRouter = require('./routes/admin');
 const indexRouter = require('./routes/index');
 const profileRouter = require('./routes/profile');
+const publicVcfRouter = require('./routes/publicVcf');
+
 
 // -----------------------------
 // Database connection
@@ -98,6 +100,8 @@ app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api', profileRouter);
 app.use('/', indexRouter);
+app.use('/api/public', publicVcfRouter);
+
 
 // Landing page example
 app.get('/', (req, res) => {
